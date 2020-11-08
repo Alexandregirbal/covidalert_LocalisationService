@@ -15,11 +15,6 @@ public class Location {
     private float latitude;
     private float longitude;
     private Date location_date;
-    @ManyToMany(mappedBy = "locations")
-    @JsonIgnore
-    private List<User> users;
-
-
 
     public float getLatitude() {
         return latitude;
