@@ -9,6 +9,8 @@ import polytech.covidalert.models.LocationRepository;
 
 import java.util.List;
 
+@RestController
+@RequestMapping("/covidalert/api/locations")
 public class LocationController {
     @Autowired
     private LocationRepository locationRepository;
