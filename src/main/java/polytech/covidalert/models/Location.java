@@ -14,7 +14,6 @@ public class Location {
     private long location_id ;
     private float latitude;
     private float longitude;
-    private Date location_date;
 
     public float getLatitude() {
         return latitude;
@@ -32,13 +31,6 @@ public class Location {
         this.longitude = longitude;
     }
 
-    public Date getLocation_date() {
-        return location_date;
-    }
-
-    public void setLocation_date(Date location_date) {
-        this.location_date = location_date;
-    }
 
     public long getLocation_id() {
         return location_id;

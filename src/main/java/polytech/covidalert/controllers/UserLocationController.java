@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import polytech.covidalert.kafka.KafkaProducer;
 import polytech.covidalert.models.Location;
-import polytech.covidalert.models.LocationRepository;
 import polytech.covidalert.models.UserLocation;
 import polytech.covidalert.models.UserLocationRepository;
 
@@ -14,6 +14,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/covidalert/api/user-locations")
 public class UserLocationController {
+    private final KafkaProducer kafkaProducer;
+
+    @Autowired
+    UserLocationController(KafkaProducer kafkaProducer) {
+        this.kafkaProducer = kafkaProducer;
+    }
+
+    @PostMapping(value = "/publish")
+    public Object sendMessageToKafkaTopic(@RequestBody final Object userLocation) {
+        //this.kafkaProducer.sendMessage(userLocation,"mytopic-1");
+        System.out.println(userLocation);
+        return userLocation;
+    }
+
     @Autowired
     private UserLocationRepository userLocationRepository;
 
@@ -35,5 +49,13 @@ public class UserLocationController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserLocation create(@RequestBody final UserLocation userLocation) {
         return userLocationRepository.saveAndFlush(userLocation);
+    }
+
+
+    @PostMapping
+    @RequestMapping("/send")
+    public void send(@RequestBody final UserLocation userLocation) {
+        System.out.println(userLocation.toString());
+
     }
 }
