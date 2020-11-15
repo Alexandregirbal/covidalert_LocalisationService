@@ -12,7 +12,7 @@ import polytech.covidalert.models.UserLocationRepository;
 import java.util.List;
 
 @RestController
-@RequestMapping("/covidalert/api/user-locations")
+@RequestMapping("/user-locations")
 public class UserLocationController {
     private final KafkaProducer kafkaProducer;
 
@@ -23,7 +23,7 @@ public class UserLocationController {
 
     @PostMapping(value = "/publish")
     public Object sendMessageToKafkaTopic(@RequestBody final Object userLocation) {
-        //this.kafkaProducer.sendMessage(userLocation,"mytopic-1");
+        this.kafkaProducer.sendMessage(userLocation,"mytopic-1");
         System.out.println(userLocation);
         return userLocation;
     }
