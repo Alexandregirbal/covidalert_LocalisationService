@@ -11,7 +11,8 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
     @Bean
-    public NewTopic suspectsTopic() {
-        return TopicBuilder.name("suspects").build();
+    public NewTopic locationsTopic() {
+        return TopicBuilder.name("locations").build();
     }
+
 }

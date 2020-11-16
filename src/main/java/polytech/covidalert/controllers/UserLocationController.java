@@ -14,19 +14,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/user-locations")
 public class UserLocationController {
-    private final KafkaProducer kafkaProducer;
-
-    @Autowired
-    UserLocationController(KafkaProducer kafkaProducer) {
-        this.kafkaProducer = kafkaProducer;
-    }
-
-    @PostMapping(value = "/publish")
-    public Object sendMessageToKafkaTopic(@RequestBody final Object userLocation) {
-        this.kafkaProducer.sendMessage(userLocation,"mytopic-1");
-        System.out.println(userLocation);
-        return userLocation;
-    }
 
     @Autowired
     private UserLocationRepository userLocationRepository;

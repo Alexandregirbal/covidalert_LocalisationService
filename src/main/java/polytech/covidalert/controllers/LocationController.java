@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import polytech.covidalert.kafka.KafkaProducer;
 import polytech.covidalert.models.Location;
 import polytech.covidalert.models.LocationRepository;
 
@@ -12,6 +13,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/locations")
 public class LocationController {
+/**    private final KafkaProducer kafkaProducer;
+
+    @Autowired
+    LocationController(KafkaProducer kafkaProducer) {
+        this.kafkaProducer = kafkaProducer;
+    }
+
+    @PostMapping(value = "/publish")
+    public Object sendMessageToKafkaTopic(@RequestBody final Location location) {
+        this.kafkaProducer.sendMessage(location,"locations");
+        return location;
+    }*/
     @Autowired
     private LocationRepository locationRepository;
 
