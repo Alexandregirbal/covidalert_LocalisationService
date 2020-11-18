@@ -27,4 +27,19 @@ public class KafkaLocation {
     }
 
     public int getTimestamp() { return this.timestamp; }
+/**
+    @Override
+    public String toString() {
+        return "KafkaLocation{" +
+                "userEmail='" + userEmail + '\'' +
+                ", longitude=" + longitude +
+                ", latitude=" + latitude +
+                ", timestamp=" + timestamp +
+                '}';
+    }*/
+@Override
+public String toString() {
+    return "KafkaLocation{"+ timestamp +
+            '}';
+}
 }
