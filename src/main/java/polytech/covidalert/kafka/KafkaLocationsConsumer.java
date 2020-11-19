@@ -15,24 +15,27 @@ public class KafkaLocationsConsumer {
     private int minuteOfTimestamp;
     private ArrayList<KafkaLocation> setOfLocations;
     private ArrayList<ArrayList<KafkaLocation>> locationsToBeTreated;
-    private ArrayList<KafkaCloseUsersOfUser> usersRelations;
+    private ArrayList<KafkaPairOfCloseUsers> usersRelations;
+    private int numberOfMinutesToBeClose;
 
     public KafkaLocationsConsumer() {
         this.minuteOfTimestamp = 0;
+        this.numberOfMinutesToBeClose = 3;
         this.setOfLocations = new ArrayList<KafkaLocation>();
         this.locationsToBeTreated = new ArrayList<ArrayList<KafkaLocation>>();
         this.usersRelations = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < numberOfMinutesToBeClose; i++) {
             this.locationsToBeTreated.add(new ArrayList<KafkaLocation>());
         }
     }
 
     public void addSetOfLocations() {
         try {
-            for(int i = 5-1; i >= 1; i--){
+            for(int i = numberOfMinutesToBeClose-1; i >= 1; i--){
                 locationsToBeTreated.set(i, (ArrayList<KafkaLocation>) locationsToBeTreated.get(i-1).clone());
             }
             locationsToBeTreated.set(0, (ArrayList<KafkaLocation>) setOfLocations.clone());
+            System.out.println(locationsToBeTreated);
             setOfLocations.clear();
         } catch (Exception e) {
             System.out.println("Error while adding setOfLocations in locationsToBeTreated:");
@@ -41,7 +44,7 @@ public class KafkaLocationsConsumer {
 
     public Boolean locationsToBeTreatedContainsEmptyMinutes() {
         Boolean result = false;
-        for(int i = 0; i<5; i++) {
+        for(int i = 0; i<numberOfMinutesToBeClose; i++) {
             if (locationsToBeTreated.get(i).isEmpty()){
                 result = true;
             }
@@ -49,7 +52,11 @@ public class KafkaLocationsConsumer {
         return result;
     }
 
-    public boolean locationsAreCloserThanDistance(int distance, float lat1, float long1, float lat2, float long2) {
+    private boolean locationsAreCloserThanDistance(int distance, KafkaLocation l1, KafkaLocation l2) {
+        float lat1 = l1.getLatitude();
+        float long1 = l1.getLongitude();
+        float lat2 = l2.getLatitude();
+        float long2 = l2.getLongitude();
         if ((lat1 == lat2) & (long1 == long2)) {
             return true;
         }
@@ -70,6 +77,54 @@ public class KafkaLocationsConsumer {
         }
     }
 
+    private ArrayList<KafkaPairOfCloseUsers> deleteDoublons(ArrayList<KafkaPairOfCloseUsers> closeUsers) {
+        ArrayList<KafkaPairOfCloseUsers> simpleCloseUsers = (ArrayList<KafkaPairOfCloseUsers>) closeUsers.clone();
+        for (int i = 0; i < closeUsers.size(); i++) {
+            for (int j = i + 1; j < closeUsers.size(); j++) {
+                if (KafkaPairOfCloseUsers.areTwoPairsSimilars(closeUsers.get(i), closeUsers.get(j))) {
+                    simpleCloseUsers.remove(j);
+                }
+            }
+
+        }
+        return simpleCloseUsers;
+    }
+
+    private ArrayList<KafkaPairOfCloseUsers> generateCloseUsers(ArrayList<KafkaLocation> l1, ArrayList<KafkaLocation> l2) {
+        ArrayList<KafkaPairOfCloseUsers> closeUsers = new ArrayList<KafkaPairOfCloseUsers>();
+
+        for (int i = 0; i < l1.size(); i++){
+            for (int j = 0; j < l2.size(); j++){
+                KafkaLocation location1 = l1.get(i);
+                KafkaLocation location2 = l2.get(j);
+                if (!location1.getUserEmail().equals(location2.getUserEmail())) {
+                    if (locationsAreCloserThanDistance(20, location1, location2)) {
+
+                        closeUsers.add(new KafkaPairOfCloseUsers(location1.getUserEmail(), location2.getUserEmail()));
+                    }
+                }
+            }
+        }
+        return deleteDoublons(closeUsers);
+    }
+
+    private ArrayList<KafkaPairOfCloseUsers> getCommonCloseUsers(ArrayList<KafkaPairOfCloseUsers> closeUsers1, ArrayList<KafkaPairOfCloseUsers> closeUsers2) {
+        ArrayList<KafkaPairOfCloseUsers> closeUsers = new ArrayList<KafkaPairOfCloseUsers>();
+        System.out.println("Begining of getCommonCloseUsers");
+        System.out.println(closeUsers1);
+        System.out.println(closeUsers2);
+        for (int i = 0; i < closeUsers1.size(); i++) {
+            for (int j = 0; j < closeUsers2.size(); j++) {
+                //compare les 2 emails un a un
+                if (KafkaPairOfCloseUsers.areTwoPairsSimilars(closeUsers1.get(i), closeUsers2.get(j))){
+                    closeUsers.add(closeUsers1.get(i));
+                }
+            }
+        }
+        System.out.println("Common close users: " + closeUsers);
+        return closeUsers;
+    }
+
 
     @KafkaListener(topics = "locations", groupId="15")
     public void locationsListener(@Payload KafkaLocation message) {
@@ -80,7 +135,19 @@ public class KafkaLocationsConsumer {
             addSetOfLocations();
             if(!locationsToBeTreatedContainsEmptyMinutes()){
                 System.out.println("Compare locations and send to next topic");
+                Boolean invariant = true;
+                int index = 1;
+                ArrayList<KafkaPairOfCloseUsers> closeUsers = generateCloseUsers(locationsToBeTreated.get(numberOfMinutesToBeClose-1), locationsToBeTreated.get(0));
 
+                while ( invariant && index <= numberOfMinutesToBeClose-2 ) {
+                    ArrayList<KafkaPairOfCloseUsers> nextCloseUsers = generateCloseUsers(locationsToBeTreated.get(numberOfMinutesToBeClose-1), locationsToBeTreated.get(index));
+                    closeUsers = getCommonCloseUsers(closeUsers, nextCloseUsers);
+                    if (closeUsers.isEmpty()) {
+                        invariant = false;
+                    }
+                    index += 1;
+                }
+                System.out.println(index + ": " + closeUsers);
 
             } else {
                 System.out.println("At least one location set is empty, wait to get more.");
