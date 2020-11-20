@@ -10,9 +10,11 @@ import org.springframework.kafka.config.TopicBuilder;
 //   bin/kafka-server-start.sh config/server.properties
 @Configuration
 public class KafkaTopicConfig {
+    /**
     @Bean
-    public NewTopic locationsTopic() {
-        return TopicBuilder.name("locations").build();
-    }
+    public NewTopic closeUsersTopic() {
+        return TopicBuilder.name("closeUsers").build();
+    }*/
+
 
 }

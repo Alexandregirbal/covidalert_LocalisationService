@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class KafkaPairOfCloseUsers {
     private String userEmail1;
     private String userEmail2;
+    private int timestamp;
 
     public String getUserEmail1() {
         return userEmail1;
@@ -14,9 +15,14 @@ public class KafkaPairOfCloseUsers {
         return userEmail2;
     }
 
-    public KafkaPairOfCloseUsers(String userEmail1, String userEmail2) {
+    public int getTimestamp() {
+        return timestamp;
+    }
+
+    public KafkaPairOfCloseUsers(String userEmail1, String userEmail2, int timestamp) {
         this.userEmail1 = userEmail1;
         this.userEmail2 = userEmail2;
+        this.timestamp = timestamp;
     }
 
     public static Boolean areTwoPairsSimilars(KafkaPairOfCloseUsers p1, KafkaPairOfCloseUsers p2) {
@@ -29,6 +35,6 @@ public class KafkaPairOfCloseUsers {
 
     @Override
     public String toString() {
-        return "KafkaPairOfCloseUsers: " + userEmail1 + '/' + userEmail2;
+        return "KafkaPairOfCloseUsers: " + userEmail1 + '/' + userEmail2 + '/' + timestamp;
     }
 }

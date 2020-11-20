@@ -2,6 +2,7 @@ package polytech.covidalert.kafka;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -100,7 +101,7 @@ public class KafkaLocationsConsumer {
                 if (!location1.getUserEmail().equals(location2.getUserEmail())) {
                     if (locationsAreCloserThanDistance(20, location1, location2)) {
 
-                        closeUsers.add(new KafkaPairOfCloseUsers(location1.getUserEmail(), location2.getUserEmail()));
+                        closeUsers.add(new KafkaPairOfCloseUsers(location1.getUserEmail(), location2.getUserEmail(), location1.getTimestamp()));
                     }
                 }
             }
@@ -110,9 +111,6 @@ public class KafkaLocationsConsumer {
 
     private ArrayList<KafkaPairOfCloseUsers> getCommonCloseUsers(ArrayList<KafkaPairOfCloseUsers> closeUsers1, ArrayList<KafkaPairOfCloseUsers> closeUsers2) {
         ArrayList<KafkaPairOfCloseUsers> closeUsers = new ArrayList<KafkaPairOfCloseUsers>();
-        System.out.println("Begining of getCommonCloseUsers");
-        System.out.println(closeUsers1);
-        System.out.println(closeUsers2);
         for (int i = 0; i < closeUsers1.size(); i++) {
             for (int j = 0; j < closeUsers2.size(); j++) {
                 //compare les 2 emails un a un
@@ -121,7 +119,6 @@ public class KafkaLocationsConsumer {
                 }
             }
         }
-        System.out.println("Common close users: " + closeUsers);
         return closeUsers;
     }
 
@@ -148,7 +145,9 @@ public class KafkaLocationsConsumer {
                     index += 1;
                 }
                 System.out.println(index + ": " + closeUsers);
-
+                if (!closeUsers.isEmpty()) {
+                    //on met en base ici
+                }
             } else {
                 System.out.println("At least one location set is empty, wait to get more.");
             }
