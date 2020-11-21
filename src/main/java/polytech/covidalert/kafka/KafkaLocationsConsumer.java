@@ -6,9 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+import polytech.covidalert.controllers.CovidDeclarationController;
 
 import java.util.ArrayList;
 
+//DO NOT FORGET:
+//   bin/zookeeper-server-start.sh config/zookeeper.properties
+//   bin/kafka-server-start.sh config/server.properties
 @Component
 public class KafkaLocationsConsumer {
     Logger LOG = LoggerFactory.getLogger(KafkaLocationsConsumer.class);
@@ -16,15 +20,14 @@ public class KafkaLocationsConsumer {
     private int minuteOfTimestamp;
     private ArrayList<KafkaLocation> setOfLocations;
     private ArrayList<ArrayList<KafkaLocation>> locationsToBeTreated;
-    private ArrayList<KafkaPairOfCloseUsers> usersRelations;
     private int numberOfMinutesToBeClose;
 
     public KafkaLocationsConsumer() {
         this.minuteOfTimestamp = 0;
         this.numberOfMinutesToBeClose = 3;
         this.setOfLocations = new ArrayList<KafkaLocation>();
+        this.setOfLocations = new ArrayList<KafkaLocation>();
         this.locationsToBeTreated = new ArrayList<ArrayList<KafkaLocation>>();
-        this.usersRelations = new ArrayList<>();
         for (int i = 0; i < numberOfMinutesToBeClose; i++) {
             this.locationsToBeTreated.add(new ArrayList<KafkaLocation>());
         }
@@ -129,30 +132,48 @@ public class KafkaLocationsConsumer {
         int minute = message.getTimestamp()/60;
         if (minuteOfTimestamp != minute){ //minute has changed
             minuteOfTimestamp = minute;
-            addSetOfLocations();
-            if(!locationsToBeTreatedContainsEmptyMinutes()){
-                System.out.println("Compare locations and send to next topic");
-                Boolean invariant = true;
-                int index = 1;
-                ArrayList<KafkaPairOfCloseUsers> closeUsers = generateCloseUsers(locationsToBeTreated.get(numberOfMinutesToBeClose-1), locationsToBeTreated.get(0));
-
-                while ( invariant && index <= numberOfMinutesToBeClose-2 ) {
-                    ArrayList<KafkaPairOfCloseUsers> nextCloseUsers = generateCloseUsers(locationsToBeTreated.get(numberOfMinutesToBeClose-1), locationsToBeTreated.get(index));
-                    closeUsers = getCommonCloseUsers(closeUsers, nextCloseUsers);
-                    if (closeUsers.isEmpty()) {
-                        invariant = false;
-                    }
-                    index += 1;
-                }
-                System.out.println(index + ": " + closeUsers);
-                if (!closeUsers.isEmpty()) {
-                    //on met en base ici
-                }
-            } else {
-                System.out.println("At least one location set is empty, wait to get more.");
-            }
+            handleLocations();
         }
         setOfLocations.add(message);
         System.out.println(setOfLocations);
     }
+
+    public void handleLocations() {
+        addSetOfLocations();
+        if(!locationsToBeTreatedContainsEmptyMinutes()){
+            System.out.println("Compare locations and save closeUsers");
+            Boolean invariant = true;
+            int index = 1;
+            ArrayList<KafkaPairOfCloseUsers> closeUsers = generateCloseUsers(locationsToBeTreated.get(numberOfMinutesToBeClose-1), locationsToBeTreated.get(0));
+
+            while ( invariant && index <= numberOfMinutesToBeClose-2 ) {
+                ArrayList<KafkaPairOfCloseUsers> nextCloseUsers = generateCloseUsers(locationsToBeTreated.get(numberOfMinutesToBeClose-1), locationsToBeTreated.get(index));
+                closeUsers = getCommonCloseUsers(closeUsers, nextCloseUsers);
+                if (closeUsers.isEmpty()) {
+                    invariant = false;
+                }
+                index += 1;
+            }
+            System.out.println(index + ": " + closeUsers);
+            if (!closeUsers.isEmpty()) {
+                //on met en base ici
+                CovidDeclarationController.addPairsOfCloseUsers(closeUsers);
+            }
+        } else {
+            System.out.println("At least one location set is empty, wait to get more.");
+        }
+    }
+
+    public int getMinuteOfTimestamp() {
+        return minuteOfTimestamp;
+    }
+
+    public ArrayList<KafkaLocation> getSetOfLocations() {
+        return setOfLocations;
+    }
+
+    public ArrayList<ArrayList<KafkaLocation>> getLocationsToBeTreated() {
+        return locationsToBeTreated;
+    }
+
 }
