@@ -49,4 +49,19 @@ public final class CovidDeclarationController {
         System.out.println("Users found: " + closeUsersOfUser);
         return closeUsersOfUser;
     }
+
+    /*
+    @PostMapping
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public Object sendAlertToCloseUsersOfUser(@RequestBody final String userEmail) {
+        ArrayList<Map> toReturn = new ArrayList<>();
+        System.out.println("Looking for contact cases of " + userEmail + "...");
+        HashSet<String> closeUsersOfUser = findCloseUsersOfUser(userEmail);
+        System.out.println("Users found: " + closeUsersOfUser);
+        for(String email : closeUsersOfUser){
+            toReturn.add(Collections.singletonMap("userEmail", email));
+        }
+        return toReturn;
+    }
+     */
 }
