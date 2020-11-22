@@ -39,7 +39,6 @@ public class KafkaLocationsConsumer {
                 locationsToBeTreated.set(i, (ArrayList<KafkaLocation>) locationsToBeTreated.get(i-1).clone());
             }
             locationsToBeTreated.set(0, (ArrayList<KafkaLocation>) setOfLocations.clone());
-            System.out.println(locationsToBeTreated);
             setOfLocations.clear();
         } catch (Exception e) {
             System.out.println("Error while adding setOfLocations in locationsToBeTreated:");
@@ -135,7 +134,6 @@ public class KafkaLocationsConsumer {
             handleLocations();
         }
         setOfLocations.add(message);
-        System.out.println(setOfLocations);
     }
 
     public void handleLocations() {
@@ -160,7 +158,7 @@ public class KafkaLocationsConsumer {
                 CovidDeclarationController.addPairsOfCloseUsers(closeUsers);
             }
         } else {
-            System.out.println("At least one location set is empty, wait to get more.");
+            //System.out.println("At least one location set is empty, wait to get more.");
         }
     }
 
